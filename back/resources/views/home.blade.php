@@ -16,7 +16,7 @@
             <hr />
             <div x-text="`Name: ${$store?.data?.user?.name}`"></div>
             <div x-text="`Email: ${$store?.data?.user?.email}`"></div>
-            <img style="max-width:350" :src="$store?.data?.user?.picture">
+            <img referrerPolicy="no-referrer" style="max-width:350" :src="$store?.data?.user?.picture">
 
             <div>
                 <button @click="handleSync">Synchronise</button>
