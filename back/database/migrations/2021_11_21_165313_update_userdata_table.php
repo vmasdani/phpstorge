@@ -20,6 +20,7 @@ class UpdateUserdataTable extends Migration
             $table->integer('ordering')->nullable();
             $table->bigInteger('ext_created_by_id')->nullable();
             $table->boolean('hidden')->nullable();
+            // basemodel end
         });
     }
 
