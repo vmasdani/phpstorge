@@ -9,10 +9,10 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Laravel\Lumen\Auth\Authorizable;
 
-class Storage extends Model
+class StorageRecord extends Model
 {
 
-    protected $table = 'storage';
+    protected $table = 'storage_record';
     /**
      * The attributes that are mass assignable.
      *
@@ -22,17 +22,11 @@ class Storage extends Model
         // base model
         'id', 'uuid', 'ext_created_by_id', 'ordering',  'hidden',
         // base model end
-
-        'created', 'updated', 'value', 'record_id', 'key', 'user_id'
+        'storage_id', 'key', 'value', 'created', 'updated'
     ];
 
-    public function user()
+    public function storage()
     {
-        return $this->belongsTo(User::class, 'user_id');
-    }
-
-    public function storageRecords()
-    {
-        return $this->hasMany(StorageRecord::class, 'storage_id');
+        return $this->belongsTo(Storage::class, 'storage_id');
     }
 }

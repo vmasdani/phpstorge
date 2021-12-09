@@ -24,4 +24,9 @@ class User extends Model
         // base model end
         'email',
     ];
+
+    public function storages()
+    {
+        return $this->hasMany(Storage::class, 'user_id');
+    }
 }
