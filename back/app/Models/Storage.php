@@ -23,7 +23,7 @@ class Storage extends Model
         'id', 'uuid', 'ext_created_by_id', 'ordering',  'hidden',
         // base model end
 
-        'created', 'updated', 'value', 'record_id', 'key', 'user_id'
+         'value', 'key', 'user_id'
     ];
 
     public function user()

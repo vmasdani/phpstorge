@@ -4,6 +4,8 @@ namespace App;
 
 use App\Dataclasses\AuthInfo;
 use App\Dataclasses\GoogleResponseJson;
+use Firebase\JWT\JWT;
+use Firebase\JWT\Key;
 use GuzzleHttp\Client;
 use JsonMapper\Cache\NullCache;
 use JsonMapper\Handler\PropertyMapper;
@@ -35,6 +37,14 @@ class Helper
             case 'facebook':
                 // TODO: to be implemented
                 return null;
+            case 'jwt':
+                $decoded = JWT::decode($token, new Key(env('JWT_SECRET'), 'HS256'));
+
+
+                $a = new AuthInfo;
+                $a->isAdmin = count($decoded) > 0 ? $decoded[0]?->admin : false;
+
+                return $a;
             default:
                 return null;
         }

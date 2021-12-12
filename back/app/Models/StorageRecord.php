@@ -22,7 +22,7 @@ class StorageRecord extends Model
         // base model
         'id', 'uuid', 'ext_created_by_id', 'ordering',  'hidden',
         // base model end
-        'storage_id', 'key', 'value', 'created', 'updated'
+        'storage_id',  'value', 'created', 'updated'
     ];
 
     public function storage()

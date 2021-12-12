@@ -56,13 +56,13 @@
                 await idbKeyval?.set('test', 'hello')
                 console.log('[Test idbkeyval]', await idbKeyval?.get('test'))
             })()
-            
+
             Alpine.store('data', {
                 user: null,
                 userData: null
             })
 
-           
+
 
 
         })
@@ -78,7 +78,10 @@
                     headers: {
                         'authorization': localStorage.getItem('apiKey'),
                         'auth_type': localStorage.getItem('authType'),
-                    }
+                    },
+                    body: JSON.stringify({
+                        key: 'abcde'
+                    })
                 })
 
                 if (resp.status !== 200) throw await resp.text()
@@ -105,6 +108,9 @@
                         'auth_type': localStorage.getItem('authType'),
                     }
                 })
+
+                if (resp.status !== 200) throw await resp.text()
+                alert(JSON.stringify(await resp.json()))
             } catch (e) {
                 console.error(e)
             }

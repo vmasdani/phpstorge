@@ -22,7 +22,7 @@ class User extends Model
         // base model
         'id', 'uuid', 'ext_created_by_id', 'ordering',  'hidden',
         // base model end
-        'email',
+        'email', 'api_key'
     ];
 
     public function storages()
