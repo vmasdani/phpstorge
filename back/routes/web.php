@@ -152,7 +152,7 @@ $router->group(['prefix' => 'api/v1'], function () use ($router) {
                 $request->header('authorization')
             );
 
-            if ($a->email != null && $a->email != '') {
+            if ($a?->email != null && $a?->email != '') {
                 $u = null;
                 $foundUser = User::where('email', '=', $a->email)->first();
 
@@ -236,6 +236,8 @@ $router->group(['prefix' => 'api/v1'], function () use ($router) {
                             [
                                 'created' => round(microtime(true) * 1000),
                                 'updated' => round(microtime(true) * 1000),
+                                'deleted' => round(microtime(true) * 1000),
+
                                 'uuid' => uniqid(),
                                 'storage_id' => $savedStorage?->id,
                                 'value' => json_encode(

@@ -23,7 +23,20 @@ class Storage extends Model
         'id', 'uuid', 'ext_created_by_id', 'ordering',  'hidden',
         // base model end
 
-         'value', 'key', 'user_id'
+        'value', 'key', 'user_id'
+    ];
+
+    protected $casts = [
+        // base model
+        'id' => 'integer',
+        'uuid' => 'string',
+        'ext_created_by_id' => 'integer',
+        'ordering' => 'integer',
+        'hidden' => 'boolean',
+        // base model
+        'value' => 'string',
+        'key' => 'string',
+        'user_id' => 'integer',
     ];
 
     public function user()

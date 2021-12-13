@@ -4,6 +4,7 @@ namespace App;
 
 use App\Dataclasses\AuthInfo;
 use App\Dataclasses\GoogleResponseJson;
+use Exception;
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
 use GuzzleHttp\Client;
@@ -20,26 +21,30 @@ class Helper
     {
         switch ($authType) {
             case 'google':
-                $g = new GoogleResponseJson;
+                try {
+                    $g = new GoogleResponseJson;
 
-                Helper::deserializeJsonFromString(
-                    (new Client())->getAsync('https://oauth2.googleapis.com/tokeninfo?id_token=' . $token)->wait()?->getBody()?->getContents(),
-                    $g
-                );
+                    Helper::deserializeJsonFromString(
+                        (new Client())->getAsync('https://oauth2.googleapis.com/tokeninfo?id_token=' . $token)->wait()?->getBody()?->getContents(),
+                        $g
+                    );
 
-                $a = new AuthInfo;
-                $a->name = $g->givenName . ' ' . $g->familyName;
-                $a->email = $g->email;
-                $a->picture = $g->picture;
+                    $a = new AuthInfo;
+                    $a->name = $g->givenName . ' ' . $g->familyName;
+                    $a->email = $g->email;
+                    $a->picture = $g->picture;
 
-                return $a;
+                    return $a;
+                } catch (Exception $e) {
+                    return null;
+                }
 
             case 'facebook':
                 // TODO: to be implemented
                 return null;
+
             case 'jwt':
                 $decoded = JWT::decode($token, new Key(env('JWT_SECRET'), 'HS256'));
-
 
                 $a = new AuthInfo;
                 $a->isAdmin = count($decoded) > 0 ? $decoded[0]?->admin : false;

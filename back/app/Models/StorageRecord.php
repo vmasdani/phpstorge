@@ -22,8 +22,25 @@ class StorageRecord extends Model
         // base model
         'id', 'uuid', 'ext_created_by_id', 'ordering',  'hidden',
         // base model end
-        'storage_id',  'value', 'created', 'updated'
+        'storage_id',  'value', 'created', 'updated', 'deleted'
     ];
+
+    protected $casts = [
+        // base model
+        'id' => 'integer',
+        'uuid' => 'string',
+        'ext_created_by_id' => 'integer',
+        'ordering' => 'integer',
+        'hidden' => 'boolean',
+        // base model
+        'storage_id' => 'integer',
+        'value' => 'string',
+        'created' => 'integer',
+        'updated' => 'integer',
+        'deleted' => 'integer',
+        
+    ];
+
 
     public function storage()
     {

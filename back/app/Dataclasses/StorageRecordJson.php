@@ -12,4 +12,6 @@ class StorageRecordJson extends BaseModelJson
     public ?string $value = null;
     public ?int $created = null;
     public ?int $updated = null;
+    public ?int $deleted = null;
+    
 }

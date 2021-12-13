@@ -25,6 +25,19 @@ class User extends Model
         'email', 'api_key'
     ];
 
+    protected $casts = [
+        // base model
+        'id' => 'integer',
+        'uuid' => 'string',
+        'ext_created_by_id' => 'integer',
+        'ordering' => 'integer',
+        'hidden' => 'boolean',
+        // base model
+        'email' => 'string',
+        'api_key' => 'string',
+    ];
+
+
     public function storages()
     {
         return $this->hasMany(Storage::class, 'user_id');
