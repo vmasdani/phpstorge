@@ -77,7 +77,7 @@
                     method: 'post',
                     headers: {
                         'authorization': localStorage.getItem('apiKey'),
-                        'auth_type': localStorage.getItem('authType'),
+                        'auth-type': localStorage.getItem('authType'),
                     },
                     body: JSON.stringify({
                         key: 'abcde'
@@ -105,7 +105,7 @@
                     method: 'post',
                     headers: {
                         'authorization': localStorage.getItem('apiKey'),
-                        'auth_type': localStorage.getItem('authType'),
+                        'auth-type': localStorage.getItem('authType'),
                     }
                 })
 
@@ -135,7 +135,7 @@
                     method: 'post',
                     headers: {
                         authorization: googleUser.getAuthResponse().id_token,
-                        auth_type: 'google'
+                        'auth-type': 'google'
                     }
                 })
 

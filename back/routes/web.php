@@ -131,7 +131,7 @@ $router->group(['prefix' => 'api/v1'], function () use ($router) {
     $router->post('/info',  function (Request $request) use ($router) {
         try {
             return json_encode(Helper::getInfoFromAuth(
-                $request->header('auth_type'),
+                $request->header('auth-type'),
                 $request->header('authorization')
             ),);
         } catch (Exception $e) {
@@ -145,12 +145,20 @@ $router->group(['prefix' => 'api/v1'], function () use ($router) {
             $st = new StorageJson;
             Helper::deserializeJsonFromString($request->getContent(), $st);
 
-            // return response()->json($st);
+            // return;
+            // return response()->json($request->header('authorization'));
+
+            // return (
+            //     $request->headers
+
+            // );
 
             $a = Helper::getInfoFromAuth(
-                $request->header('auth_type'),
+                $request->header('auth-type'),
                 $request->header('authorization')
             );
+
+            // return $a;
 
             if ($a?->email != null && $a?->email != '') {
                 $u = null;
@@ -177,6 +185,7 @@ $router->group(['prefix' => 'api/v1'], function () use ($router) {
                 // Synchronise with last updated at
 
                 foreach (($st?->storage_records ?? []) as $sr) {
+                    // dd((array) $sr);
                     $sr->storage_id = $stRes?->id;
 
                     $foundSr = StorageRecord::where('storage_id', '=', $st?->id)
@@ -185,13 +194,22 @@ $router->group(['prefix' => 'api/v1'], function () use ($router) {
 
                     // return $foundSr;
 
+                    // dd($foundSr);
+
                     if ($foundSr) {
                         if (($foundSr?->updated ?? 0) < ($sr?->updated ?? 0)) {
                             $sr->id = $foundSr?->id;
-                            StorageRecord::updateOrCreate(['id' => $sr?->id], (array) $sr);
+
+                            // dd($foundSr);
+
+                            $savedSr = StorageRecord::updateOrCreate(['id' => $sr?->id], (array) $sr);
+                        
+                            // dd($savedSr);
                         }
                     } else {
-                        StorageRecord::updateOrCreate(['id' => null], (array) $sr);
+                        $savedSr = StorageRecord::updateOrCreate(['id' => null], (array) $sr);
+
+                        // dd($savedSr);
                     }
                 }
 
@@ -210,7 +228,7 @@ $router->group(['prefix' => 'api/v1'], function () use ($router) {
     $router->post('/sync-test-add',  function (Request $request) use ($router) {
         try {
             $a = Helper::getInfoFromAuth(
-                $request->header('auth_type'),
+                $request->header('auth-type'),
                 $request->header('authorization')
             );
 

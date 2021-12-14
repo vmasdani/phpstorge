@@ -102,7 +102,7 @@
                                                         method: 'post',
                                                         headers: {
                                                             authorization: apiKey ?? '',
-                                                            auth_type: 'jwt',
+                                                            auth-type: 'jwt',
                                                             'content-type': 'application/json'
                                                         }
                                                     })
@@ -158,7 +158,7 @@
                 const resp = await fetch(`${params?.baseUrl}/api/v1/admin/users`, {
                     headers: {
                         authorization: params?.apiKey ?? '',
-                        auth_type: 'jwt'
+                        auth-type: 'jwt'
                     }
                 })
 
