@@ -7,7 +7,7 @@ use JsonMapper\Middleware\Attributes\MapFrom;
 class BaseModelJson
 {
     // Base model
-    public ?int $id = null;
+    public mixed $id = null;
     public ?string $uuid = null;
 
     #[MapFrom("extCreatedById")]

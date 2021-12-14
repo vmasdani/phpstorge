@@ -10,7 +10,7 @@ class StorageJson extends BaseModelJson
     public ?string $key = null;
 
     #[MapFrom("userId")]
-    public ?int $user_id = null;
+    public mixed $user_id = null;
 
     /**
      * @var App\Dataclasses\StorageRecordJson[]
