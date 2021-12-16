@@ -188,33 +188,18 @@ $router->group(['prefix' => 'api/v1'], function () use ($router) {
                     // dd((array) $sr);
                     $sr->storage_id = $stRes?->id;
 
-                    $foundSr = StorageRecord::where('storage_id', '=', $st?->id)
-                        ->where('uuid', '=', $sr?->uuid)
-                        ->first();
-
-                    // return $foundSr;
-
-                    // dd($foundSr);
-
-                    if ($foundSr) {
-                        if (($foundSr?->updated ?? 0) < ($sr?->updated ?? 0)) {
-                            $sr->id = $foundSr?->id;
-
-                            // dd($foundSr);
-
-                            $savedSr = StorageRecord::updateOrCreate(['id' => $sr?->id], (array) $sr);
-                        
-                            // dd($savedSr);
-                        }
+                    if ($sr?->id == null) {
+                        StorageRecord::updateOrCreate(['id' => null], (array) $sr);
                     } else {
-                        $savedSr = StorageRecord::updateOrCreate(['id' => null], (array) $sr);
+                        $foundSr = StorageRecord::where('id', '=' , $sr?->id)->first();
 
-                        // dd($savedSr);
+                        if ($foundSr && ($foundSr?->updated ?? 0) < ($sr?->updated ?? 0)) {
+                            StorageRecord::updateOrCreate(['id' => $sr?->id], (array) $sr);
+                        }
                     }
                 }
 
                 $stRes?->storageRecords;
-
 
                 return $stRes;
             } else {
