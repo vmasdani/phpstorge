@@ -4,11 +4,12 @@
     <script src="//unpkg.com/alpinejs" defer></script>
     <script src="https://apis.google.com/js/platform.js" async defer></script>
     <script src="https://cdn.jsdelivr.net/npm/idb-keyval@6.0.3/dist/umd.js" integrity="sha256-3pK9NGoDNZL/nVNZZu4slx8QcA88Yd0yKNo2DMlJNXo=" crossorigin="anonymous"></script>
-    <meta name="google-signin-client_id" :content="lumen.googleOauthClientKey">
+    <meta id="g-meta" name="google-signin-client_id" content="{{ json_decode($data)->googleOauthClientKey }}">
 </head>
 
 <body>
     <input value="{{$data}}" id="lumen" style="display:none" />
+    <!-- <div x-text="JSON.stringify(lumen)"></div> -->
     <div class="g-signin2" data-onsuccess="onSignIn"></div><a href="#" onclick="signOut();">Sign out</a>
 
     <template x-if="$store.data?.user">
@@ -37,7 +38,10 @@
             }, JSON length: ${
                 JSON.stringify($store?.data?.userData)?.length
             }`"></div>
-            <!-- <div x-text="JSON.stringify($store.data)"></div> -->
+            <div>
+                <pre style="overflow: auto;padding:1em;color:white;background-color:gray" x-text="localStorage.getItem('apiKey')"></pre>
+            </div>
+
             <div style="height:60vh;resize:vertical;border:2px solid grey;overflow:auto">
                 <pre>
                     <small x-text="JSON.stringify ($store?.data?.userData, null, 2)">
@@ -53,6 +57,7 @@
     <script>
         document.addEventListener('alpine:init', () => {
             (async () => {
+                console.log(document.getElementById('g-meta'))
                 await idbKeyval?.set('test', 'hello')
                 console.log('[Test idbkeyval]', await idbKeyval?.get('test'))
             })()

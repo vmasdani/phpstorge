@@ -6,6 +6,7 @@ use App\Helper;
 use App\Models\Storage;
 use App\Models\StorageRecord;
 use App\Models\User;
+use App\Protos\StorgeSyncRecord;
 use App\Serde\UserJson;
 use Dotenv\Dotenv;
 use Firebase\JWT\JWT;
@@ -17,6 +18,13 @@ use Illuminate\Support\Facades\Config;
 use JsonMapper\JsonMapperFactory;
 use JsonMapper\Middleware\Attributes\MapFrom;
 
+$router->get('/protobuf-test', function () {
+    $stor = new StorgeSyncRecord;
+    $stor->setEmail('valianmasdani@gmail.com');
+
+    return response($stor->serializeToJsonString())
+        ->header('content-type', 'application/json');
+});
 
 $router->get(
     '/',
@@ -59,6 +67,81 @@ $router->group(['prefix' => 'admin'], function () use ($router) {
     );
 });
 
+// V2, use protobuf for sync
+$router->group(['prefix' => 'api/v2'], function () use ($router) {
+    $router->post('/sync', function (Request $r) {
+        $bod = new StorgeSyncRecord();
+        $bod->mergeFromJsonString($r->getContent());
+
+        try {
+            // Deserialize storage json
+            $st = new StorgeSyncRecord();
+            $st->mergeFromJsonString($r->getContent());
+
+            $a = Helper::getInfoFromAuthV2(
+                $r->header('auth-type'),
+                $r->header('authorization')
+            );
+
+            // return $a;
+
+            if ($a?->getEmail() != null && $a?->getEmail() != '') {
+                $u = null;
+                $foundUser = User::where('email', '=', $a->getEmail())->first();
+
+                if ($foundUser) {
+                    $u  = User::updateOrCreate(['id' => $foundUser?->id], (array) $u);
+                } else {
+                    $u = User::updateOrCreate(['id' => null], (array) ['email' => $a->email]);
+                }
+
+                $stRes = null;
+                $foundSt = Storage::query()
+                    ->where('key', '=', $st->getKey())
+                    ->where('user_id', '=', $u?->id)
+                    ->first();
+
+                $st->setUserId($u->id);
+
+                if ($foundSt) {
+                    $st->setId($foundSt?->id);
+                    $stRes = Storage::updateOrCreate(['id' => $foundSt?->id], (array) $st);
+                } else {
+                    $stRes = Storage::updateOrCreate(['id' => null], (array) $st);
+                }
+
+                // Synchronise with last updated at
+
+                foreach (($st?->storage_records ?? []) as $sr) {
+                    // dd((array) $sr);
+                    $sr->storage_id = $stRes?->id;
+
+                    if ($sr?->id == null) {
+                        StorageRecord::updateOrCreate(['id' => null], (array) $sr);
+                    } else {
+                        $foundSr = StorageRecord::where('id', '=', $sr?->id)->first();
+
+                        if ($foundSr && ($foundSr?->updated ?? 0) < ($sr?->updated ?? 0)) {
+                            StorageRecord::updateOrCreate(['id' => $sr?->id], (array) $sr);
+                        }
+                    }
+                }
+
+                $stRes?->storageRecords;
+
+                return $stRes;
+            } else {
+                return response('Email is null', 500);
+            }
+        } catch (Exception $e) {
+            return response('sync error' . $e, 500);
+        }
+
+
+        return response($bod->serializeToJsonString())
+            ->header('content-type', 'application/json');
+    });
+});
 
 $router->group(['prefix' => 'api/v1'], function () use ($router) {
     $router->group(['prefix' => 'admin'], function () use ($router) {
@@ -191,7 +274,7 @@ $router->group(['prefix' => 'api/v1'], function () use ($router) {
                     if ($sr?->id == null) {
                         StorageRecord::updateOrCreate(['id' => null], (array) $sr);
                     } else {
-                        $foundSr = StorageRecord::where('id', '=' , $sr?->id)->first();
+                        $foundSr = StorageRecord::where('id', '=', $sr?->id)->first();
 
                         if ($foundSr && ($foundSr?->updated ?? 0) < ($sr?->updated ?? 0)) {
                             StorageRecord::updateOrCreate(['id' => $sr?->id], (array) $sr);
