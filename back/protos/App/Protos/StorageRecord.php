@@ -33,6 +33,10 @@ class StorageRecord extends \Google\Protobuf\Internal\Message
      * Generated from protobuf field <code>optional int64 deleted = 5;</code>
      */
     protected $deleted = null;
+    /**
+     * Generated from protobuf field <code>optional uint64 id = 6;</code>
+     */
+    protected $id = null;
 
     /**
      * Constructor.
@@ -45,6 +49,7 @@ class StorageRecord extends \Google\Protobuf\Internal\Message
      *     @type int|string $created
      *     @type int|string $updated
      *     @type int|string $deleted
+     *     @type int|string $id
      * }
      */
     public function __construct($data = NULL) {
@@ -208,6 +213,38 @@ class StorageRecord extends \Google\Protobuf\Internal\Message
     {
         GPBUtil::checkInt64($var);
         $this->deleted = $var;
+
+        return $this;
+    }
+
+    /**
+     * Generated from protobuf field <code>optional uint64 id = 6;</code>
+     * @return int|string
+     */
+    public function getId()
+    {
+        return isset($this->id) ? $this->id : 0;
+    }
+
+    public function hasId()
+    {
+        return isset($this->id);
+    }
+
+    public function clearId()
+    {
+        unset($this->id);
+    }
+
+    /**
+     * Generated from protobuf field <code>optional uint64 id = 6;</code>
+     * @param int|string $var
+     * @return $this
+     */
+    public function setId($var)
+    {
+        GPBUtil::checkUint64($var);
+        $this->id = $var;
 
         return $this;
     }

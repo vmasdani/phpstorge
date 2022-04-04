@@ -112,17 +112,18 @@ $router->group(['prefix' => 'api/v2'], function () use ($router) {
 
                 // Synchronise with last updated at
 
-                foreach (($st?->storage_records ?? []) as $sr) {
-                    // dd((array) $sr);
-                    $sr->storage_id = $stRes?->id;
+                foreach (($st?->getStorageRecords() ?? []) as  $sr) {
+                    /** @var App\Protos\StorageRecord */
+                    $sr = $sr;
+                    $sr->setStorageId($stRes?->id) ;
 
                     if ($sr?->id == null) {
                         StorageRecord::updateOrCreate(['id' => null], (array) $sr);
                     } else {
-                        $foundSr = StorageRecord::where('id', '=', $sr?->id)->first();
+                        $foundSr = StorageRecord::where('id', '=', $sr->getId())->first();
 
-                        if ($foundSr && ($foundSr?->updated ?? 0) < ($sr?->updated ?? 0)) {
-                            StorageRecord::updateOrCreate(['id' => $sr?->id], (array) $sr);
+                        if ($foundSr && ($foundSr?->updated ?? 0) < ($sr->getUpdated() ?? 0)) {
+                            StorageRecord::updateOrCreate(['id' => $sr->getId()], (array) $sr);
                         }
                     }
                 }
