@@ -4,7 +4,8 @@ namespace App;
 
 use App\Dataclasses\AuthInfo;
 use App\Dataclasses\GoogleResponseJson;
-use App\Protos\StorgeAuthInfo;
+use App\Protos\BaseModel;
+use App\Protos\StorgeAuthInfoProto;
 use Exception;
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
@@ -56,7 +57,7 @@ class Helper
         }
     }
 
-    static function getInfoFromAuthV2(?string $authType, ?string $token,): ?StorgeAuthInfo
+    static function getInfoFromAuthV2(?string $authType, ?string $token,): ?StorgeAuthInfoProto
     {
         switch ($authType) {
             case 'google':
@@ -68,7 +69,7 @@ class Helper
                         $g
                     );
 
-                    $a = new StorgeAuthInfo();
+                    $a = new StorgeAuthInfoProto();
                     $a->setName($g->givenName . ' ' . $g->familyName);
                     $a->setEmail($g->email);
                     $a->setPicture($g->picture);
@@ -85,7 +86,7 @@ class Helper
             case 'jwt':
                 $decoded = JWT::decode($token, new Key(env('JWT_SECRET'), 'HS256'));
 
-                $a = new StorgeAuthInfo();
+                $a = new StorgeAuthInfoProto();
                 $a->setIsAdmin(
                     count($decoded) > 0
                         ? $decoded[0]?->admin
@@ -106,5 +107,54 @@ class Helper
             new TypedProperties(new NullCache),
             new DocBlockAnnotations(new NullCache)
         )->mapObjectFromString($str, $obj);
+    }
+
+    public static function encodeBaseModel(mixed $v, BaseModel $vx)
+    {
+        if ($v->id !=  null) {
+            $vx->setId($v->id);
+        }
+        if ($v->uuid !=  null) {
+            $vx->setUuid($v->uuid);
+        }
+        if ($v->ext_created_by_id !=  null) {
+            $vx->setExtCreatedById($v->ext_created_by_id);
+        }
+        if ($v->ordering !=  null) {
+            $vx->setOrdering($v->ordering);
+        }
+        if ($v->hidden !=  null) {
+            $vx->setHidden($v->hidden);
+        }
+        if ($v->created_at !=  null) {
+            $vx->setCreatedAt($v->created_at->format(DATE_ATOM));
+        }
+        if ($v->updated_at !=  null) {
+            $vx->setUpdatedAt($v->updated_at->format(DATE_ATOM));
+        }
+    }
+    public static function decodeBaseModel(BaseModel $v, mixed $vx)
+    {
+        if ($v->hasId()) {
+            $vx->id = $v->getId();
+        }
+        if ($v->hasUuid()) {
+            $vx->uuid = $v->getUuid();
+        }
+        if ($v->hasExtCreatedById()) {
+            $vx->ext_created_by_id = $v->getExtCreatedById();
+        }
+        if ($v->hasOrdering()) {
+            $vx->ordering = $v->getOrdering();
+        }
+        if ($v->hasHidden()) {
+            $vx->hidden = $v->getHidden();
+        }
+        if ($v->hasCreatedAt()) {
+            $vx->created_at = $v->getCreatedAt();
+        }
+        if ($v->hasUpdatedAt()) {
+            $vx->updated_at = $v->getUpdatedAt();
+        }
     }
 }

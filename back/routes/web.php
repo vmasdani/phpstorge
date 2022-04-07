@@ -6,6 +6,8 @@ use App\Helper;
 use App\Models\Storage;
 use App\Models\StorageRecord;
 use App\Models\User;
+use App\Protos\StorageRecordProto;
+use App\Protos\StorageRecordsProto;
 use App\Protos\StorgeSyncRecord;
 use App\Serde\UserJson;
 use Dotenv\Dotenv;
@@ -115,7 +117,7 @@ $router->group(['prefix' => 'api/v2'], function () use ($router) {
                 foreach (($st?->getStorageRecords() ?? []) as  $sr) {
                     /** @var App\Protos\StorageRecord */
                     $sr = $sr;
-                    $sr->setStorageId($stRes?->id) ;
+                    $sr->setStorageId($stRes?->id);
 
                     if ($sr?->id == null) {
                         StorageRecord::updateOrCreate(['id' => null], (array) $sr);
@@ -142,6 +144,28 @@ $router->group(['prefix' => 'api/v2'], function () use ($router) {
         return response($bod->serializeToJsonString())
             ->header('content-type', 'application/json');
     });
+
+    $router->get('/test-storage-records-proto', function () {
+        $v = new StorageRecordsProto;
+        $v->setStorageRecords(StorageRecord::all()->map(function ($sr) {
+            /** @var App\Models\StorageRecord */
+            $sr = $sr;
+            return $sr->encode();
+        })->toArray());
+        return response($v->serializeToJsonString() )->header('content-type', 'application/json');
+    });
+    
+    $router->get('/storage-records-all', function () {
+        return StorageRecord::all();
+    });
+    $router->post('/storage-records-proto', function (Request $r) {
+        $vx = new StorageRecordProto();
+        $vx->mergeFromJsonString($r->getContent());
+
+        $v = StorageRecord::decode($vx);
+        return $v;
+    });
+    
 });
 
 $router->group(['prefix' => 'api/v1'], function () use ($router) {

@@ -3,26 +3,39 @@ syntax = "proto3";
 option php_namespace = "App\\Protos";
 option php_metadata_namespace = "App\\Protos\\GPBMetadata";
 
-message StorgeSyncRecord {
+message BaseModel {
+  optional uint64 id = 1;
+  optional string uuid  = 2 ;
+  optional uint64 ext_created_by_id = 3;
+  optional string created_at = 4;
+  optional string updated_at = 5;
+  optional int32 ordering = 6;
+  optional bool hidden = 7;
+  
+}
+message StorgeSyncRecordProto {
   optional string value = 1;
   optional string key = 2;
   optional uint64 user_id = 3;
-  repeated StorageRecord storage_records = 4;
+  repeated StorageRecordProto storage_records = 4;
   optional string email = 5;
-  optional uint64 id = 6;
+  optional BaseModel base_model = 6;
 }
 
-message StorageRecord {
+message StorageRecordProto {
   optional uint64 storage_id = 1;
   optional string value = 2;
   optional int64 created = 3;
   optional int64 updated = 4;
   optional int64 deleted = 5;
-  optional uint64 id = 6;
-
+  optional BaseModel base_model = 6;
+}
+message StorageRecordsProto 
+{
+  repeated StorageRecordProto storage_records = 1;
 }
 
-message StorgeAuthInfo {
+message StorgeAuthInfoProto {
   optional string picture = 1;
   optional string name = 2;
   optional string email = 3;
