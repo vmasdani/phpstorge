@@ -148,7 +148,7 @@ Header: authorization: <google oauth2 token i.e. eyJ12isdjfdi...>
 
 - If you provide no ID, then the storage record will be treated as new (`CREATE` operation).
 - If you provide ID, the system will compare the `updated` timestamp. If the record in the POST data is greater than the database, it will update the record in the database. If it's not, it will keep the version in the database.
-- Deleting fields can be done by passing the `deleted` flag. You can nullify the `value`, `created`, and `updated` if you wish, in order to save space.
+- Deleting records can be done by passing the `deleted` flag. You can nullify the `value`, `created`, and `updated` if you wish, in order to save space.
 
 ## (WIP): generate secret
 
