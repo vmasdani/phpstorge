@@ -114,7 +114,7 @@ There are 3 options for authenticating:
 
 ## Synchronisation
 
-Synchronisation is done through Protobuf v3 JSON. The spec is available [here](https://github.com/vmasdani/storge/blob/main/back/protos/masterstorge.proto) in `StorgeSyncRecordProto`. You can [compile your proto files to the client that you use (Typescript, Dart, Java, etc.)](https://developers.google.com/protocol-buffers/docs/tutorials). The important data are:
+Synchronisation is done through Protobuf v3 JSON. The spec is available [here](https://github.com/vmasdani/storge/blob/main/back/protos/masterstorge.proto) in `StorageProto`. You can [compile your proto files to the client that you use (Typescript, Dart, Java, etc.)](https://developers.google.com/protocol-buffers/docs/tutorials). The important data are:
 
 
 ### QUICKSTART: Sandbox mode, needs no auth
