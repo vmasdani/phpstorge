@@ -13,13 +13,14 @@ message BaseModel {
   optional bool hidden = 7;
   
 }
-message StorgeSyncRecordProto {
+message StorageProto {
   optional string value = 1;
   optional string key = 2;
   optional uint64 user_id = 3;
   repeated StorageRecordProto storage_records = 4;
   optional string email = 5;
   optional BaseModel base_model = 6;
+  optional bool sandbox =  7;
 }
 
 message StorageRecordProto {

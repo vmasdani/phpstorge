@@ -9,9 +9,9 @@ use Google\Protobuf\Internal\RepeatedField;
 use Google\Protobuf\Internal\GPBUtil;
 
 /**
- * Generated from protobuf message <code>StorgeSyncRecordProto</code>
+ * Generated from protobuf message <code>StorageProto</code>
  */
-class StorgeSyncRecordProto extends \Google\Protobuf\Internal\Message
+class StorageProto extends \Google\Protobuf\Internal\Message
 {
     /**
      * Generated from protobuf field <code>optional string value = 1;</code>
@@ -37,6 +37,10 @@ class StorgeSyncRecordProto extends \Google\Protobuf\Internal\Message
      * Generated from protobuf field <code>optional .BaseModel base_model = 6;</code>
      */
     protected $base_model = null;
+    /**
+     * Generated from protobuf field <code>optional bool sandbox = 7;</code>
+     */
+    protected $sandbox = null;
 
     /**
      * Constructor.
@@ -50,6 +54,7 @@ class StorgeSyncRecordProto extends \Google\Protobuf\Internal\Message
      *     @type \App\Protos\StorageRecordProto[]|\Google\Protobuf\Internal\RepeatedField $storage_records
      *     @type string $email
      *     @type \App\Protos\BaseModel $base_model
+     *     @type bool $sandbox
      * }
      */
     public function __construct($data = NULL) {
@@ -235,6 +240,38 @@ class StorgeSyncRecordProto extends \Google\Protobuf\Internal\Message
     {
         GPBUtil::checkMessage($var, \App\Protos\BaseModel::class);
         $this->base_model = $var;
+
+        return $this;
+    }
+
+    /**
+     * Generated from protobuf field <code>optional bool sandbox = 7;</code>
+     * @return bool
+     */
+    public function getSandbox()
+    {
+        return isset($this->sandbox) ? $this->sandbox : false;
+    }
+
+    public function hasSandbox()
+    {
+        return isset($this->sandbox);
+    }
+
+    public function clearSandbox()
+    {
+        unset($this->sandbox);
+    }
+
+    /**
+     * Generated from protobuf field <code>optional bool sandbox = 7;</code>
+     * @param bool $var
+     * @return $this
+     */
+    public function setSandbox($var)
+    {
+        GPBUtil::checkBool($var);
+        $this->sandbox = $var;
 
         return $this;
     }

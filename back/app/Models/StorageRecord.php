@@ -34,8 +34,8 @@ class StorageRecord extends Model
         // base model
         $v->setBaseModel(new BaseModel());
         Helper::encodeBaseModel($this, $v->getBaseModel());
-
         // base model end
+
         if ($this->storage_id != null) {
             $v->setStorageId($this->storage_id);
         }
@@ -51,7 +51,6 @@ class StorageRecord extends Model
         if ($this->deleted != null) {
             $v->setDeleted($this->deleted);
         }
-
 
 
         return $v;

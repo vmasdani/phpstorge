@@ -8,7 +8,8 @@ use App\Models\StorageRecord;
 use App\Models\User;
 use App\Protos\StorageRecordProto;
 use App\Protos\StorageRecordsProto;
-use App\Protos\StorgeSyncRecord;
+use App\Protos\StorgeAuthInfoProto;
+use App\Protos\StorageProto;
 use App\Serde\UserJson;
 use Dotenv\Dotenv;
 use Firebase\JWT\JWT;
@@ -21,7 +22,7 @@ use JsonMapper\JsonMapperFactory;
 use JsonMapper\Middleware\Attributes\MapFrom;
 
 $router->get('/protobuf-test', function () {
-    $stor = new StorgeSyncRecord;
+    $stor = new StorageProto();
     $stor->setEmail('valianmasdani@gmail.com');
 
     return response($stor->serializeToJsonString())
@@ -69,81 +70,125 @@ $router->group(['prefix' => 'admin'], function () use ($router) {
     );
 });
 
-// V2, use protobuf for sync
-$router->group(['prefix' => 'api/v2'], function () use ($router) {
-    $router->post('/sync', function (Request $r) {
-        $bod = new StorgeSyncRecord();
-        $bod->mergeFromJsonString($r->getContent());
+function syncV2(Request $r, bool $sandbox)
+{
+    try {
+        // Deserialize storage json
+        $st = new StorageProto();
+        $st->mergeFromJsonString($r->getContent());
 
-        try {
-            // Deserialize storage json
-            $st = new StorgeSyncRecord();
-            $st->mergeFromJsonString($r->getContent());
+        /** @var App\Protos\StorgeAuthInfoProto */
+        $authInfo = (function () use ($st, $r, $sandbox) {
+            if ($sandbox) {
+                $a = new StorgeAuthInfoProto();
+                $a->setEmail(
+                    ($st->hasEmail() ? $st->getEmail() : '') .
+                        '@sandbox'
+                );
+                return $a;
+            } else {
+                return Helper::getInfoFromAuthV2(
+                    $r->header('auth-type'),
+                    $r->header('authorization')
+                );
+            }
+        })();
 
-            $a = Helper::getInfoFromAuthV2(
-                $r->header('auth-type'),
-                $r->header('authorization')
-            );
 
-            // return $a;
+        // return $a;
+        $decodedStorage = Storage::decode($st);
+        $decodedStorage->sandbox = true;
 
-            if ($a?->getEmail() != null && $a?->getEmail() != '') {
-                $u = null;
-                $foundUser = User::where('email', '=', $a->getEmail())->first();
+        if ($authInfo?->getEmail() != null && $authInfo?->getEmail() != '') {
+            /** @var User */
+            $u = (function () use ($authInfo) {
+                $foundUser = User::where('email', '=', $authInfo->getEmail())->first();
 
                 if ($foundUser) {
-                    $u  = User::updateOrCreate(['id' => $foundUser?->id], (array) $u);
+                    return $foundUser;
                 } else {
-                    $u = User::updateOrCreate(['id' => null], (array) ['email' => $a->email]);
+                    return User::updateOrCreate(['id' => null], (array) ['email' => $authInfo->getEmail()]);
                 }
+            })();
+           
+            // dd($u->id);
 
-                $stRes = null;
+            /** @var Storage */
+            $stRes = (function () use ($st, $u, $decodedStorage) {
+                /** @var Storage  */
                 $foundSt = Storage::query()
-                    ->where('key', '=', $st->getKey())
+                    ->where('key', '=', 
+                        ($st->hasKey() 
+                            ? $st->getKey()
+                            : '')
+
+                    )
                     ->where('user_id', '=', $u?->id)
                     ->first();
 
-                $st->setUserId($u->id);
-
+                // $st->setUserId($u->id);
+                // dd($foundSt->toArray());
                 if ($foundSt) {
-                    $st->setId($foundSt?->id);
-                    $stRes = Storage::updateOrCreate(['id' => $foundSt?->id], (array) $st);
+                    return $foundSt;
                 } else {
-                    $stRes = Storage::updateOrCreate(['id' => null], (array) $st);
+                    $decodedStorage->user_id = $u->id;
+                    return Storage::updateOrCreate(['id' => null], $decodedStorage->toArray());
                 }
+            })();
 
-                // Synchronise with last updated at
+            // Synchronise with last updated at
 
-                foreach (($st?->getStorageRecords() ?? []) as  $sr) {
-                    /** @var App\Protos\StorageRecord */
-                    $sr = $sr;
-                    $sr->setStorageId($stRes?->id);
+            foreach (($st?->getStorageRecords() ?? []) as  $srProto) {
+                /** @var App\Models\StorageRecord */
+                $sr = StorageRecord::decode($srProto);
 
-                    if ($sr?->id == null) {
-                        StorageRecord::updateOrCreate(['id' => null], (array) $sr);
-                    } else {
-                        $foundSr = StorageRecord::where('id', '=', $sr->getId())->first();
+                // dd($sr);
+                $sr->storage_id = $stRes?->id ;
 
-                        if ($foundSr && ($foundSr?->updated ?? 0) < ($sr->getUpdated() ?? 0)) {
-                            StorageRecord::updateOrCreate(['id' => $sr->getId()], (array) $sr);
-                        }
+                if ($sr?->id == null) {
+                    StorageRecord::updateOrCreate(['id' => null], $sr->toArray());
+                } else {
+                    $foundSr = StorageRecord::where('id', '=', $sr->id)->first();
+
+                    if ($foundSr && ($foundSr?->updated ?? 0) < ($sr->updated ?? 0)) {
+                        StorageRecord::updateOrCreate(['id' => $sr->id], $sr->toArray());
                     }
                 }
-
-                $stRes?->storageRecords;
-
-                return $stRes;
-            } else {
-                return response('Email is null', 500);
             }
-        } catch (Exception $e) {
-            return response('sync error' . $e, 500);
+
+
+            /** @var Storage */
+            // dd($stRes->id);
+            $savedStorage = Storage::query()->find($stRes->id);
+            $savedStorage->storageRecords;
+
+            // return response()->json($savedStorage);
+            return response($stRes?->encode()->serializeToJsonString())
+                ->header('content-type',  'application/json');
+        } else {
+            return response('failed to get email', 500);
         }
+    } catch (Exception $e) {
+        return response('sync error' . $e, 500);
+    }
 
 
-        return response($bod->serializeToJsonString())
-            ->header('content-type', 'application/json');
+    // return response($bod->serializeToJsonString())
+    //     ->header('content-type', 'application/json');
+}
+
+
+// V2, use protobuf for sync
+$router->group(['prefix' => 'api/v2'], function () use ($router) {
+    // Sandbox mode
+    $router->post('/sandbox/sync', function (Request $r) {
+        return syncV2($r, true);
     });
+    
+    $router->post('/sync', function (Request $r) {
+        return syncV2($r, false);
+    });
+    
 
     $router->get('/test-storage-records-proto', function () {
         $v = new StorageRecordsProto;
@@ -152,9 +197,9 @@ $router->group(['prefix' => 'api/v2'], function () use ($router) {
             $sr = $sr;
             return $sr->encode();
         })->toArray());
-        return response($v->serializeToJsonString() )->header('content-type', 'application/json');
+        return response($v->serializeToJsonString())->header('content-type', 'application/json');
     });
-    
+
     $router->get('/storage-records-all', function () {
         return StorageRecord::all();
     });
@@ -165,7 +210,6 @@ $router->group(['prefix' => 'api/v2'], function () use ($router) {
         $v = StorageRecord::decode($vx);
         return $v;
     });
-    
 });
 
 $router->group(['prefix' => 'api/v1'], function () use ($router) {
