@@ -89,18 +89,18 @@ There are 3 options for authenticating:
 3. Custom backend (Todo)
 
 ```
-                    ┌──────────────┐
+                     ┌──────────────┐
            ┌───────►│ Google OAuth ├───────────────────────────┐
            │        └──────────────┘                           │
            │        Header: auth-type: google                  │
-  ┌────────┴──┐     Header: authorization: eyJsklfds..         │
-  │Client     │                                                │
-  │Mobile/Web │                                                │
-  └────────┬──┘                                             ┌──▼────┐
-           │        ┌────────────────┐                      │Storge │
-           ├───────►│ Facebook OAuth ├─────────────────────►│API    │
-           │        └────────────────┘                      └──▲────┘
-           │        Header: auth-type: facebook                │
+           │        Header: authorization: eyJsklfds..         │
+           │                                                   │
+           │                                                   │
+           │                                                ┌──▼────┐
+   ┌───────┴───┐    ┌────────────────┐                      │Storge │
+   │Client     ├───►│ Facebook OAuth ├─────────────────────►│API    │
+   │Mobile/Web │    └────────────────┘                      └──▲────┘
+   └───────┬───┘    Header: auth-type: facebook                │
            │        Header: authorization: eyJsklfds..         │
            │                                                   │
            │                                                   │
@@ -116,6 +116,36 @@ There are 3 options for authenticating:
 
 Synchronisation is done through Protobuf v3 JSON. The spec is available [here](https://github.com/vmasdani/storge/blob/main/back/protos/masterstorge.proto) in `StorgeSyncRecordProto`. You can [compile your proto files to the client that you use (Typescript, Dart, Java, etc.)](https://developers.google.com/protocol-buffers/docs/tutorials). The important data are:
 
+
+### Sandbox mode, needs no auth
+```
+POST /api/v2/sandbox/sync
+```
+```json
+{
+  "key": "notes",
+  "email": "valian@xmail.com",
+  "storage_records": [
+    {
+      "baseModel": {
+        "id": 1
+      },
+      "value": "{\"my\": \"first_data\"}",
+      "created": 1649432105879,
+      "updated": 1649432105879,
+      "deleted": 1649432105879
+    },
+    {
+      "value": "{\"my\": \"second_data\"}",
+      "created": 1649432105880,
+      "updated": 1649432105900
+    }
+  ]
+}
+```
+Note that you need to supply `email` field in sandbox mode, in order to differentiate the api which needs actual authorization token, and the regular one which does not. The email in sandbox mode will be appended with `@sandbox` suffix at the end of the user email. For example `valian@xmail.com@sandbox`;
+
+### With authentication
 ```
 POST /api/v2/sync
 
@@ -165,7 +195,6 @@ JWT_SECRET=
 ```
 
 ## Todos:
-1. Complete v2 API. Basically unusable for now
-2. Rewrite to Laravel. Should not be a hard work, since the Lumen project [recommends Laravel instead of Lumen for new projects](https://lumen.laravel.com/docs/9.x#installation).
-3. Create Facebook auth.
-4. Create token based auth in order for other backends to use storge.
+1. Rewrite to Laravel. Should not be a hard work, since the Lumen project [recommends Laravel instead of Lumen for new projects](https://lumen.laravel.com/docs/9.x#installation).
+2. Create Facebook auth.
+3. Create token based auth in order for other backends to use storge.
