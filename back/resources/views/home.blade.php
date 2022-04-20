@@ -1,6 +1,8 @@
 <html x-data="{
     lumen: {{ $data }},
-    signedIn: false
+    signedIn: false,
+    user: null,
+    userData: null
 }" x-init="() => { 
     this.alpineData = $data 
     console.log($data)
@@ -32,8 +34,17 @@
 
         <template x-if="signedIn">
             <div>
-                <div>Generate API key:</div>
-                <div class="d-flex justify-content-center"><button class="btn btn-sm btn-primary">API key</button></div>
+                <div>API key:</div>
+                <template x-if="!(user?.apiKey)">
+                    <div class="d-flex justify-content-center"><button @click="genapikey" class="btn btn-sm btn-primary">
+                            Generate
+                        </button></div>
+                </template>
+
+                <div>
+                    <pre><small x-text="user?.apiKey ?? ''"></small></pre>
+                </div>
+
             </div>
         </template>
 
@@ -47,14 +58,14 @@
 
 
 
-
-    <template x-if="$store.data?.user">
+    <!-- <div x-text="JSON.stringify(user)"></div> -->
+    <template x-if="user">
         <div>
             <h5>User Info</h5>
             <hr />
-            <div x-text="`Name: ${$store?.data?.user?.name}`"></div>
-            <div x-text="`Email: ${$store?.data?.user?.email}`"></div>
-            <img referrerPolicy="no-referrer" style="max-width:350" :src="$store?.data?.user?.picture">
+            <div x-text="`Name: ${user?.name}`"></div>
+            <div x-text="`Email: ${user?.email}`"></div>
+            <img referrerPolicy="no-referrer" style="max-width:350" :src="user?.picture">
 
             <div style="display:flex">
                 <div>
@@ -68,11 +79,11 @@
             <hr />
 
             <div x-text="`Storages: ${
-                $store?.data?.userData?.storages?.length
+                userData?.storages?.length
             }, Records: ${
-                $store?.data?.userData?.storages?.reduce((acc, s) => acc + (s?.storage_records?.length ?? 0), 0)
+                userData?.storages?.reduce((acc, s) => acc + (s?.storage_records?.length ?? 0), 0)
             }, JSON length: ${
-                JSON.stringify($store?.data?.userData)?.length
+                JSON.stringify(userData)?.length
             }`"></div>
             <div>
                 <pre style="overflow: auto;padding:1em;color:white;background-color:gray" x-text="localStorage.getItem('apiKey')"></pre>
@@ -80,7 +91,7 @@
 
             <div style="height:60vh;resize:vertical;border:2px solid grey;overflow:auto">
                 <pre>
-                    <small x-text="JSON.stringify ($store?.data?.userData, null, 2)">
+                    <small x-text="JSON.stringify (userData, null, 2)">
                         
                     </small>
                 </pre>
@@ -91,22 +102,6 @@
     </template>
 
     <script>
-        document.addEventListener('alpine:init', () => {
-            (async () => {
-                console.log(document.getElementById('g-meta'))
-                await idbKeyval?.set('test', 'hello')
-                console.log('[Test idbkeyval]', await idbKeyval?.get('test'))
-            })()
-
-            Alpine.store('data', {
-                user: null,
-                userData: null
-            })
-
-
-            console.log('[alpinedata]', this.alpineData)
-        })
-
         const handleSync = async () => {
             try {
                 const baseUrl = JSON.parse(document.getElementById('lumen')?.value)?.baseUrl
@@ -128,7 +123,9 @@
 
                 const respData = await resp.json()
 
-                Alpine.store('data').userData = respData
+                if (this?.alpineData) {
+                    this.alpineData.userData = respData
+                }
             } catch (e) {
                 console.error(e)
             }
@@ -154,7 +151,28 @@
             } catch (e) {
                 console.error(e)
             }
+        }
 
+        const genapikey = async () => {
+            try {
+                const baseUrl = JSON.parse(document.getElementById('lumen')?.value)?.baseUrl
+                console.log('handle sync')
+
+                const resp = await fetch(`${baseUrl}/api/v2/genapikey`, {
+                    method: 'post',
+                    headers: {
+                        'authorization': localStorage.getItem('apiKey'),
+                        'auth-type': localStorage.getItem('authType'),
+                    }
+                })
+
+                if (resp.status !== 200) throw await resp.text()
+                alert(`Generate API key OK: ${JSON.stringify(await resp.text())}`)
+                window.location.reload()
+            } catch (e) {
+                console.error(e)
+                alert('Generate API key failed.')
+            }
         }
 
 
@@ -187,9 +205,11 @@
 
                 const user = await resp.json()
 
-                Alpine.store('data').user = user
+                if (this.alpineData) {
+                    this.alpineData.user = user
+                    console.log('[user]', user, this.alpineData.user)
+                }
 
-                console.log('[user]', user, Alpine.store('data').user)
             } catch (e) {
                 console.error(e)
             }
@@ -204,9 +224,8 @@
                 localStorage.removeItem('apiKey')
                 localStorage.removeItem('authType')
 
-                Alpine.store('data').user = null
-
                 if (this?.alpineData) {
+                    this.alpineData.user = null
                     this.alpineData.signedIn = false
                 }
             });

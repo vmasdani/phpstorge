@@ -14,4 +14,5 @@ class GoogleResponseJson
 
     #[MapFrom('family_name')]
     public ?string $familyName = null;
+    public ?string $apiKey = null;
 }

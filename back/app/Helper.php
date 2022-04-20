@@ -4,6 +4,7 @@ namespace App;
 
 use App\Dataclasses\AuthInfo;
 use App\Dataclasses\GoogleResponseJson;
+use App\Models\User;
 use App\Protos\BaseModel;
 use App\Protos\StorgeAuthInfoProto;
 use Exception;
@@ -35,6 +36,15 @@ class Helper
                     $a->name = $g->givenName . ' ' . $g->familyName;
                     $a->email = $g->email;
                     $a->picture = $g->picture;
+
+                    // Find api key from db
+                    $u  = User::query()
+                        ->where('email', $g->email)
+                        ->first();
+
+                    if ($u) {
+                        $a->apiKey = $u->api_key;
+                    }
 
                     return $a;
                 } catch (Exception $e) {
