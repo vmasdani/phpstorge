@@ -1,16 +1,52 @@
-<html x-data="{lumen: {{ $data }}} ">
+<html x-data="{
+    lumen: {{ $data }},
+    signedIn: false
+}" x-init="() => { 
+    this.alpineData = $data 
+    console.log($data)
+}">
 
 <head>
     <script src="//unpkg.com/alpinejs" defer></script>
     <script src="https://apis.google.com/js/platform.js" async defer></script>
     <script src="https://cdn.jsdelivr.net/npm/idb-keyval@6.0.3/dist/umd.js" integrity="sha256-3pK9NGoDNZL/nVNZZu4slx8QcA88Yd0yKNo2DMlJNXo=" crossorigin="anonymous"></script>
     <meta id="g-meta" name="google-signin-client_id" content="{{ json_decode($data)->googleOauthClientKey }}">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
 </head>
 
-<body>
+<body class="container">
+    <div class="d-flex flex-column align-items-center">
+        <h3>Storge</h3>
+        <div>MySQL key-value adapter </div>
+    </div>
     <input value="{{$data}}" id="lumen" style="display:none" />
+    <div class="d-flex justify-content-around border border-dark p-3 rounded rounded-lg my-2">
+        <div>
+            <div class="g-signin2" data-onsuccess="onSignIn"></div>
+            <template x-if="signedIn">
+                <a href="#" onclick="signOut();">Sign out</a>
+            </template>
+        </div>
+
+        <template x-if="signedIn">
+            <div>
+                <div>Generate API key:</div>
+                <div class="d-flex justify-content-center"><button class="btn btn-sm btn-primary">API key</button></div>
+            </div>
+        </template>
+
+
+
+    </div>
     <!-- <div x-text="JSON.stringify(lumen)"></div> -->
-    <div class="g-signin2" data-onsuccess="onSignIn"></div><a href="#" onclick="signOut();">Sign out</a>
+    <!-- <template x-if="signedIn"> -->
+    <!-- </template> -->
+
+
+
+
 
     <template x-if="$store.data?.user">
         <div>
@@ -68,8 +104,7 @@
             })
 
 
-
-
+            console.log('[alpinedata]', this.alpineData)
         })
 
         const handleSync = async () => {
@@ -124,7 +159,11 @@
 
 
 
-        async function onSignIn(googleUser) {
+        async function onSignIn(googleUser, ) {
+            if (this?.alpineData) {
+                this.alpineData.signedIn = true
+            }
+
             var profile = googleUser.getBasicProfile();
             console.log('ID: ' + profile.getId()); // Do not send to your backend! Use an ID token instead.
             console.log('Name: ' + profile.getName());
@@ -166,6 +205,10 @@
                 localStorage.removeItem('authType')
 
                 Alpine.store('data').user = null
+
+                if (this?.alpineData) {
+                    this.alpineData.signedIn = false
+                }
             });
         }
     </script>
