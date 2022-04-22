@@ -66,8 +66,6 @@ DB_PASSWORD=
 
 BASE_URL=http://localhost:8000 # the URL where you host this app
 GOOGLE_OAUTH_CLIENT_KEY=blah.apps.googleusercontent.com # for google sign in. Create oauth key first in google developer console
-JWT_SECRET= # TODO: no use yet. purpose is for other backend to use storge, through API key
-ADMIN_PASSPHRASE= # TODO: no use yet. purpose is for admin panel, to perform CRUD operation on storage records
 ```
 
 2. migrate database
@@ -86,7 +84,7 @@ php -S 0.0.0.0:8000 -t public
 There are 3 options for authenticating:
 1. Google
 2. Facebook (Todo)
-3. Custom backend (Todo)
+3. Custom backend
 
 ```
                      ┌──────────────┐
@@ -107,10 +105,10 @@ There are 3 options for authenticating:
            │        ┌────────────────┐                         │
            └───────►│Custom backend  ├─────────────────────────┘
                     └────────────────┘
-                    Header: auth-type: server
+                    Header: auth-type: api_key
                     Header: authorization: eyJkalsjd..
 ```
-(Todo) For custom backend, you can generate an API token through Storge management console, in order for the backend to freely communicate with Storge API. **Make sure you store your API token securely**.
+For custom backend, you can generate an API key through Storge management console, in order for the backend to freely communicate with Storge API. **Make sure you store your API token securely**.
 
 ## Synchronisation
 
