@@ -29,6 +29,10 @@ class StorgeAuthInfoProto extends \Google\Protobuf\Internal\Message
      * Generated from protobuf field <code>optional bool is_admin = 4;</code>
      */
     protected $is_admin = null;
+    /**
+     * Generated from protobuf field <code>optional string api_key = 5;</code>
+     */
+    protected $api_key = null;
 
     /**
      * Constructor.
@@ -40,6 +44,7 @@ class StorgeAuthInfoProto extends \Google\Protobuf\Internal\Message
      *     @type string $name
      *     @type string $email
      *     @type bool $is_admin
+     *     @type string $api_key
      * }
      */
     public function __construct($data = NULL) {
@@ -171,6 +176,38 @@ class StorgeAuthInfoProto extends \Google\Protobuf\Internal\Message
     {
         GPBUtil::checkBool($var);
         $this->is_admin = $var;
+
+        return $this;
+    }
+
+    /**
+     * Generated from protobuf field <code>optional string api_key = 5;</code>
+     * @return string
+     */
+    public function getApiKey()
+    {
+        return isset($this->api_key) ? $this->api_key : '';
+    }
+
+    public function hasApiKey()
+    {
+        return isset($this->api_key);
+    }
+
+    public function clearApiKey()
+    {
+        unset($this->api_key);
+    }
+
+    /**
+     * Generated from protobuf field <code>optional string api_key = 5;</code>
+     * @param string $var
+     * @return $this
+     */
+    public function setApiKey($var)
+    {
+        GPBUtil::checkString($var, True);
+        $this->api_key = $var;
 
         return $this;
     }

@@ -62,6 +62,29 @@ class Helper
                 $a->isAdmin = count($decoded) > 0 ? $decoded[0]?->admin : false;
 
                 return $a;
+            case 'api_key':
+                try {
+                    // Find user from db
+                    $u  = User::query()
+                        ->where('email', explode(':', $token)[0])
+                        ->first();
+
+                    // Check user and  validate api key
+                    if ($u && $u->api_key == $token) {
+                        $a = new AuthInfo;
+                        $a->name = $u->name;
+                        $a->email = $u->email;
+                        // $a->picture = $g->picture;
+                        $a->apiKey = $u->api_key;
+
+                        return $a;
+                    } else {
+                        return null;
+                    }
+                } catch (Exception $e) {
+                    return null;
+                }
+
             default:
                 return null;
         }
@@ -104,6 +127,38 @@ class Helper
                 );
 
                 return $a;
+
+            case 'api_key':
+                try {
+                    // Find user from db
+                    $u  = User::query()
+                        ->where('email', explode(':', $token)[0])
+                        ->first();
+
+
+                    // Check user and  validate api key
+                    if ($u && $u->api_key == $token) {
+                        // dd($u->api_key); 
+
+                        $a = new StorgeAuthInfoProto;
+
+                        if ($u->name != null) {
+                            $a->setName($u->name);
+                        }
+                        if ($u->email != null) {
+                            $a->setEmail($u->email);
+                        }
+                        if ($u->api_key != null) {
+                            $a->setApiKey($u->api_key);
+                        }
+
+                        return $a;
+                    } else {
+                        return null;
+                    }
+                } catch (Exception $e) {
+                    return null;
+                }
             default:
                 return null;
         }

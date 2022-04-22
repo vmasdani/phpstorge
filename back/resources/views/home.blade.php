@@ -69,11 +69,17 @@
 
             <div style="display:flex">
                 <div>
-                    <button @click="handleSync">Synchronise</button>
+                    <button class="btn btn-sm btn-outline-primary" @click="handleSync">Synchronise</button>
                 </div>
                 <div>
-                    <button @click="handleSyncTestAdd">Synchronise Test Add</button>
+                    <button class="btn btn-sm btn-outline-primary" @click="handleSyncTestAdd">Synchronise Test Add</button>
                 </div>
+                <template x-if="user?.apiKey">
+                    <div>
+                        <button class="btn btn-sm btn-outline-primary" @click="getInfoFromApiKey">Get Info from API key</button>
+                    </div>
+                </template>
+
             </div>
 
             <hr />
@@ -205,6 +211,17 @@
 
                 const user = await resp.json()
 
+                // Synchronise for the first time
+
+                const respSync = await fetch(`${JSON.parse(document.getElementById('lumen').value)?.baseUrl}/api/v1/sync`, {
+                    method: 'post',
+                    headers: {
+                        authorization: googleUser.getAuthResponse().id_token,
+                        'auth-type': 'google'
+                    },
+                    body: JSON.stringify({})
+                })
+
                 if (this.alpineData) {
                     this.alpineData.user = user
                     console.log('[user]', user, this.alpineData.user)
@@ -229,6 +246,22 @@
                     this.alpineData.signedIn = false
                 }
             });
+        }
+
+        const getInfoFromApiKey = async () => {
+            try {
+                const resp = await fetch(`${JSON.parse(document.getElementById('lumen').value)?.baseUrl}/api/v1/info`, {
+                    method: 'post',
+                    headers: {
+                        authorization: this?.alpineData?.user?.apiKey,
+                        'auth-type': 'api_key'
+                    }
+                })
+
+                alert(await resp.text())
+            } catch (e) {
+
+            }
         }
     </script>
 </body>

@@ -75,7 +75,21 @@ function syncV2(Request $r, bool $sandbox)
     try {
         // Deserialize storage json
         $st = new StorageProto();
-        $st->mergeFromJsonString($r->getContent());
+        $st->mergeFromJsonString(
+            $r->getContent(),
+            ignore_unknown: true
+        );
+
+        // Validate key. Key must exist in all cases, sandboxed or not
+        if (!$st->hasKey()){
+            return response('Key must be provided in synchronization.')->setStatusCode(500);
+
+        }
+
+        // Validate email. Must have email if sandboxed mode
+        if ($sandbox && !$st->hasEmail()) {
+            return response('Email must be provided in sandbox mode.')->setStatusCode(500);
+        }
 
         /** @var App\Protos\StorgeAuthInfoProto */
         $authInfo = (function () use ($st, $r, $sandbox) {
@@ -87,17 +101,20 @@ function syncV2(Request $r, bool $sandbox)
                 );
                 return $a;
             } else {
-                return Helper::getInfoFromAuthV2(
+                $a = Helper::getInfoFromAuthV2(
                     $r->header('auth-type'),
                     $r->header('authorization')
                 );
+
+                return $a;
             }
         })();
 
 
         // return $a;
         $decodedStorage = Storage::decode($st);
-        $decodedStorage->sandbox = true;
+        $decodedStorage->sandbox = $sandbox;
+
 
         if ($authInfo?->getEmail() != null && $authInfo?->getEmail() != '') {
             /** @var User */
@@ -197,27 +214,33 @@ $router->group(['prefix' => 'api/v2'], function () use ($router) {
             $r->header('authorization')
         );
 
+
         if ($auth != null && $auth->hasEmail()) {
             /** @var User|null */
             $u = User::query()->where('email', $auth->getEmail())->first();
 
+            // return response('test') ;
+
             if ($u) {
 
                 if ($u->api_key == null) {
-                    $u->api_key = uniqid($u->email, true);
+                    $u->api_key = uniqid($u->email . ':', true);
                 }
+
 
                 User::updateOrCreate(
                     ['id' => $u->id],
                     $u->toArray()
                 );
 
-                return response($u->api_key)->header('content-type', 'application/json');
+                return response($u->api_key);
             } else {
-                return response('Email not found')->status(500);
+                return response('Email not found')
+                    ->setStatusCode(500);
             }
         } else {
-            return response('Error getting auth info')->status(500);
+            return response('Error getting auth info')
+                ->setStatusCode(500);
         }
     });
 
@@ -237,7 +260,10 @@ $router->group(['prefix' => 'api/v2'], function () use ($router) {
     });
     $router->post('/storage-records-proto', function (Request $r) {
         $vx = new StorageRecordProto();
-        $vx->mergeFromJsonString($r->getContent());
+        $vx->mergeFromJsonString(
+            $r->getContent(),
+            ignore_unknown: true
+        );
 
         $v = StorageRecord::decode($vx);
         return $v;
